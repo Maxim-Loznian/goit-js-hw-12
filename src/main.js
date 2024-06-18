@@ -26,8 +26,8 @@ searchForm.addEventListener('submit', async (event) => {
 
   page = 1;
   clearGallery();
-  hideLoadMoreBtn(); // Приховуємо кнопку "Load more"
-  showLoader(); // Показуємо лоадер
+  loadMoreBtn.classList.add('hidden');
+  showLoader();
 
   try {
     const data = await fetchImages(query, page, perPage);
@@ -40,53 +40,51 @@ searchForm.addEventListener('submit', async (event) => {
 
     renderImages(data.hits);
     if (data.totalHits > perPage) {
-      showLoadMoreBtn(); // Показуємо кнопку "Load more", якщо є ще результати для завантаження
+      loadMoreBtn.classList.remove('hidden');
     }
   } catch (error) {
     showErrorToast(error.message);
   } finally {
-    hideLoader(); // Приховуємо лоадер
+    hideLoader();
   }
 });
 
 loadMoreBtn.addEventListener('click', async () => {
-  hideLoadMoreBtn(); // Приховуємо кнопку "Load more"
-  showLoader(); // Показуємо лоадер
+  page += 1;
+  showLoader();
 
   try {
-    // Затримка для лоадера (2 секунди)
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Отримуємо дані із сервера
     const data = await fetchImages(query, page, perPage);
 
     renderImages(data.hits);
-
-    // Перевіряємо, чи досягли кінця результатів
     if (page * perPage >= totalHits) {
+      loadMoreBtn.classList.add('hidden');
       showErrorToast("We're sorry, but you've reached the end of search results.");
-    } else {
-      showLoadMoreBtn(); // Показуємо кнопку "Load more", якщо є ще результати для завантаження
     }
-    
-    smoothScroll(); // Викликаємо плавний скролл
+    smoothScroll();
   } catch (error) {
     showErrorToast(error.message);
   } finally {
-    hideLoader(); // Приховуємо лоадер
+    // Додали затримку в 2 секунди перед приховуванням лоадера після завантаження
+    setTimeout(() => {
+      hideLoader();
+      if (page * perPage < totalHits) {
+        loadMoreBtn.classList.remove('hidden');
+      }
+    }, 2000); // 2 секунди затримки
   }
 });
 
 function showLoader() {
-  loader.classList.remove('hidden'); // Показуємо лоадер
+  loader.classList.remove('hidden');
 }
 
 function hideLoader() {
-  loader.classList.add('hidden'); // Приховуємо лоадер
+  loader.classList.add('hidden');
 }
 
 function showErrorToast(message) {
-  hideLoader(); // Приховуємо лоадер
+  hideLoader();
   
   iziToast.error({
     title: 'Error',
@@ -101,12 +99,4 @@ function smoothScroll() {
     top: cardHeight * 2,
     behavior: 'smooth',
   });
-}
-
-function showLoadMoreBtn() {
-  loadMoreBtn.classList.remove('hidden'); // Показуємо кнопку "Load more"
-}
-
-function hideLoadMoreBtn() {
-  loadMoreBtn.classList.add('hidden'); // Приховуємо кнопку "Load more"
 }
