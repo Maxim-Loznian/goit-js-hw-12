@@ -51,27 +51,26 @@ searchForm.addEventListener('submit', async (event) => {
 
 loadMoreBtn.addEventListener('click', async () => {
   page += 1;
-  showLoader();
+  loadMoreBtn.classList.add('hidden'); // Приховуємо кнопку "load more"
+  showLoader(); // Показуємо лоадер
 
   try {
     const data = await fetchImages(query, page, perPage);
 
-    renderImages(data.hits);
-    if (page * perPage >= totalHits) {
-      loadMoreBtn.classList.add('hidden');
-      showErrorToast("We're sorry, but you've reached the end of search results.");
-    }
-    smoothScroll();
+    // Затримка перед відображенням зображень
+    setTimeout(() => {
+      renderImages(data.hits);
+      if (page * perPage >= totalHits) {
+        showErrorToast("We're sorry, but you've reached the end of search results.");
+      } else {
+        loadMoreBtn.classList.remove('hidden'); // Показуємо знову кнопку "load more"
+      }
+      smoothScroll();
+    }, 2000); // 2 секунди затримки для лоадера
   } catch (error) {
     showErrorToast(error.message);
   } finally {
-    // Додали затримку в 2 секунди перед приховуванням лоадера після завантаження
-    setTimeout(() => {
-      hideLoader();
-      if (page * perPage < totalHits) {
-        loadMoreBtn.classList.remove('hidden');
-      }
-    }, 2000); // 2 секунди затримки
+    hideLoader();
   }
 });
 
