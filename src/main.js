@@ -26,7 +26,7 @@ searchForm.addEventListener('submit', async (event) => {
 
   page = 1;
   clearGallery();
-  loadMoreBtn.classList.add('hidden');
+  hideLoadMoreBtn();
   showLoader();
 
   try {
@@ -39,8 +39,8 @@ searchForm.addEventListener('submit', async (event) => {
     }
 
     renderImages(data.hits);
-    if (data.totalHits > perPage) {
-      loadMoreBtn.classList.remove('hidden');
+    if (totalHits > perPage) {
+      showLoadMoreBtn();
     }
   } catch (error) {
     showErrorToast(error.message);
@@ -51,22 +51,19 @@ searchForm.addEventListener('submit', async (event) => {
 
 loadMoreBtn.addEventListener('click', async () => {
   page += 1;
-  loadMoreBtn.classList.add('hidden'); // Приховуємо кнопку "load more"
+  hideLoadMoreBtn(); // Приховуємо кнопку "load more"
   showLoader(); // Показуємо лоадер
 
   try {
     const data = await fetchImages(query, page, perPage);
 
-    // Затримка перед відображенням зображень
-    setTimeout(() => {
-      renderImages(data.hits);
-      if (page * perPage >= totalHits) {
-        showErrorToast("We're sorry, but you've reached the end of search results.");
-      } else {
-        loadMoreBtn.classList.remove('hidden'); // Показуємо знову кнопку "load more"
-      }
-      smoothScroll();
-    }, 2000); // 2 секунди затримки для лоадера
+    renderImages(data.hits);
+    if (page * perPage >= totalHits) {
+      showErrorToast("We're sorry, but you've reached the end of search results.");
+    } else {
+      showLoadMoreBtn(); // Показуємо знову кнопку "load more"
+    }
+    smoothScroll();
   } catch (error) {
     showErrorToast(error.message);
   } finally {
@@ -80,6 +77,14 @@ function showLoader() {
 
 function hideLoader() {
   loader.classList.add('hidden');
+}
+
+function showLoadMoreBtn() {
+  loadMoreBtn.classList.remove('hidden');
+}
+
+function hideLoadMoreBtn() {
+  loadMoreBtn.classList.add('hidden');
 }
 
 function showErrorToast(message) {
