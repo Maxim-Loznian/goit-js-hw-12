@@ -3,6 +3,8 @@ import iziToast from "izitoast";
 import "izitoast/dist/css/iziToast.min.css";
 import { fetchImages } from './js/pixabay-api';
 import { clearGallery, renderImages } from './js/render-functions';
+import SimpleLightbox from "simplelightbox";
+import "simplelightbox/dist/simple-lightbox.min.css";
 
 const searchForm = document.querySelector('#search-form');
 const searchInput = document.querySelector('#search-form input');
@@ -14,6 +16,12 @@ let query = '';
 let page = 1;
 const perPage = 15;
 let totalHits = 0;
+
+// Створюємо екземпляр SimpleLightbox у глобальній області видимості
+const lightbox = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionDelay: 250,
+});
 
 searchForm.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -39,6 +47,8 @@ searchForm.addEventListener('submit', async (event) => {
     }
 
     renderImages(data.hits);
+    lightbox.refresh(); // Оновлюємо SimpleLightbox після рендеру зображень
+
     if (totalHits > perPage) {
       showLoadMoreBtn();
     }
@@ -58,6 +68,8 @@ loadMoreBtn.addEventListener('click', async () => {
     const data = await fetchImages(query, page, perPage);
 
     renderImages(data.hits);
+    lightbox.refresh(); // Оновлюємо SimpleLightbox після рендеру зображень
+
     if (page * perPage >= totalHits) {
       showErrorToast("We're sorry, but you've reached the end of search results.");
     } else {
